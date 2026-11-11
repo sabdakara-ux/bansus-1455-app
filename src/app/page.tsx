@@ -46,7 +46,7 @@ export default function App() {
   // Ploting States
   const [setupVisible, setSetupVisible] = useState<Record<number, boolean>>({});
   const [plotingSetup, setPlotingSetup] = useState<Record<number, { posCount: number, selected: string[] }>>({});
-  const [activePloting, setActivePloting] = useState<Record<number, { name: string, anggota: string[] }[]>>({});
+  const [activePloting, setActivePloting] = useState<Record<number, { posData: { name: string, anggota: string[] }[], unassigned: string[] }>>({});
   
   const suratTugasRef = useRef<HTMLDivElement>(null);
 
@@ -220,7 +220,38 @@ export default function App() {
         posData[i % setup.posCount].anggota.push(nama);
     });
 
-    setActivePloting(p => ({...p, [kId]: posData}));
+    setActivePloting(p => ({...p, [kId]: { posData, unassigned: [] }}));
+  };
+
+  const handleUpdatePosName = (kId: number, posIdx: number, newName: string) => {
+    setActivePloting(p => {
+       const current = p[kId];
+       if(!current) return p;
+       const newPosData = [...current.posData];
+       newPosData[posIdx].name = newName;
+       return {...p, [kId]: {...current, posData: newPosData}};
+    });
+  };
+
+  const handleRemoveMemberPos = (kId: number, posIdx: number, nama: string) => {
+    setActivePloting(p => {
+       const current = p[kId];
+       if(!current) return p;
+       const newPosData = [...current.posData];
+       newPosData[posIdx].anggota = newPosData[posIdx].anggota.filter(n => n !== nama);
+       return {...p, [kId]: { posData: newPosData, unassigned: [...current.unassigned, nama] }};
+    });
+  };
+
+  const handleAddMemberPos = (kId: number, posIdx: number, nama: string) => {
+    if(!nama) return;
+    setActivePloting(p => {
+       const current = p[kId];
+       if(!current) return p;
+       const newPosData = [...current.posData];
+       newPosData[posIdx].anggota.push(nama);
+       return {...p, [kId]: { posData: newPosData, unassigned: current.unassigned.filter(n => n !== nama) }};
+    });
   };
 
   const handleCheckboxPloting = (kId: number, nama: string, checked: boolean) => {
@@ -354,18 +385,56 @@ export default function App() {
                     {setupVisible[k.id] && activePloting[k.id] && (
                         <div className="mt-3 bg-white p-3 rounded-lg border border-green-200 text-sm shadow-sm space-y-3">
                             <div className="flex justify-between items-center mb-2">
-                                <h4 className="font-bold text-green-700 text-xs uppercase tracking-wider"><i className="fa-solid fa-check-circle mr-1"></i> Hasil Ploting Otomatis</h4>
+                                <h4 className="font-bold text-green-700 text-xs uppercase tracking-wider flex items-center">
+                                    <i className="fa-solid fa-check-circle mr-1"></i> Hasil Ploting
+                                    <span className="ml-2 text-[8px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full lowercase tracking-normal">Mode Edit</span>
+                                </h4>
                                 <button onClick={() => setActivePloting(p => { const newP = {...p}; delete newP[k.id]; return newP; })} className="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold hover:bg-red-200">Reset Acak</button>
                             </div>
                             
-                            {activePloting[k.id].map((pos, idx) => (
-                                <div key={idx} className="bg-green-50 border border-green-100 rounded p-2">
-                                    <p className="font-bold text-gray-800 text-xs border-b border-green-200 pb-1 mb-1">{pos.name}</p>
-                                    <div className="flex flex-wrap gap-1">
-                                        {pos.anggota.map((nama, nIdx) => (
-                                            <span key={nIdx} className="bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded text-[10px] font-semibold">{nama}</span>
+                            {activePloting[k.id].unassigned.length > 0 && (
+                                <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg shadow-inner">
+                                    <p className="text-[10px] font-bold text-yellow-800 mb-1 uppercase"><i className="fa-solid fa-user-clock mr-1"></i> Belum Masuk Pos:</p>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                        {activePloting[k.id].unassigned.map((a, uIdx) => (
+                                            <span key={uIdx} className="bg-white border border-yellow-300 text-yellow-700 px-2 py-1 rounded-md text-[10px] font-bold shadow-sm">{a}</span>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+                            
+                            {activePloting[k.id].posData.map((pos, posIdx) => (
+                                <div key={posIdx} className="bg-green-50 border border-green-100 rounded p-2 relative">
+                                    <div className="flex justify-between items-center mb-2 border-b border-green-200 pb-1">
+                                        <input type="text" value={pos.name} onChange={(e) => handleUpdatePosName(k.id, posIdx, e.target.value)} className="font-bold text-gray-800 text-xs bg-transparent outline-none w-full focus:border-b focus:border-green-400 transition-colors" placeholder="Nama Pos..."/>
+                                        <i className="fa-solid fa-pen text-gray-400 text-[10px] ml-2" title="Edit nama pos"></i>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                        {pos.anggota.length === 0 && <em className="text-gray-400 text-[10px] block mb-1">Tidak ada anggota</em>}
+                                        {pos.anggota.map((nama, nIdx) => (
+                                            <span key={nIdx} className="inline-flex items-center bg-white border border-gray-200 text-gray-600 px-2 py-1.5 rounded text-[10px] font-semibold shadow-sm">
+                                                {nama}
+                                                <button onClick={() => handleRemoveMemberPos(k.id, posIdx, nama)} className="ml-1.5 pl-1.5 border-l border-gray-200 text-red-500 hover:text-red-700 transition-colors" title="Keluarkan">
+                                                    <i className="fa-solid fa-times"></i>
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                    
+                                    {activePloting[k.id].unassigned.length > 0 && (
+                                        <div className="mt-2 flex items-center gap-2 border-t border-green-200 pt-2">
+                                            <select id={`sel-add-${k.id}-${posIdx}`} className="text-[10px] border border-gray-300 rounded p-1 flex-1 bg-white focus:outline-none focus:border-green-500 text-gray-700">
+                                                <option value="">-- Tambah Anggota --</option>
+                                                {activePloting[k.id].unassigned.map(a => <option key={a} value={a}>{a}</option>)}
+                                            </select>
+                                            <button onClick={() => {
+                                                const sel = document.getElementById(`sel-add-${k.id}-${posIdx}`) as HTMLSelectElement;
+                                                if(sel && sel.value) { handleAddMemberPos(k.id, posIdx, sel.value); sel.value = ''; }
+                                            }} className="bg-green-200 text-green-700 border border-green-300 px-2 py-1 rounded text-[10px] font-bold hover:bg-green-300 transition-colors shadow-sm">
+                                                <i className="fa-solid fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             <p className="text-[10px] text-gray-500 italic mt-2 text-center">Data ploting ini sementara hanya tersimpan di layar. Gunakan Menu Administrasi untuk membuat Surat Tugas resmi.</p>
