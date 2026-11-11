@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 
 // --- INTERFACES ---
@@ -20,6 +20,9 @@ const INITIAL_DB = {
 };
 
 export default function HomePage() {
+  // --- STATE MOUNTING (Mencegah Error Hydration Next.js) ---
+  const [isMounted, setIsMounted] = useState(false);
+
   // --- AUTH & NAV STATE ---
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [usernameInput, setUsernameInput] = useState('');
@@ -58,6 +61,23 @@ export default function HomePage() {
   const [activePloting, setActivePloting] = useState<Record<number, any>>({});
   const [kebutuhanPos, setKebutuhanPos] = useState<Record<number, Record<number, number>>>({});
 
+  // --- CEK LOCAL STORAGE SAAT PERTAMA KALI LOAD ---
+  useEffect(() => {
+    setIsMounted(true);
+    const savedAuth = localStorage.getItem('bansusAuth');
+    if (savedAuth) {
+      try {
+        const parsed = JSON.parse(savedAuth);
+        if (parsed.isLoggedIn) {
+          setIsLoggedIn(true);
+          setRole(parsed.role);
+        }
+      } catch (e) {
+        console.error("Gagal membaca sesi login", e);
+      }
+    }
+  }, []);
+
   // --- UTILS ---
   const formatRupiah = (angka: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(angka);
   const showModalNotice = (title: string, message: string) => setModal({ show: true, title, message });
@@ -67,10 +87,30 @@ export default function HomePage() {
     e.preventDefault();
     const u = usernameInput.trim().toLowerCase();
     const p = passwordInput.trim().toLowerCase();
-    if (u === 'admin' && p === 'admin') { setRole('Admin'); setIsLoggedIn(true); setView('dashboard'); }
-    else if (u === 'korlap' && p === 'korlap') { setRole('Korlap'); setIsLoggedIn(true); setView('dashboard'); }
-    else if (u === 'bendahara' && p === 'bendahara') { setRole('Bendahara'); setIsLoggedIn(true); setView('dashboard'); }
-    else setLoginError('Username atau password salah!');
+    let newRole: any = null;
+
+    if (u === 'admin' && p === 'admin') newRole = 'Admin';
+    else if (u === 'korlap' && p === 'korlap') newRole = 'Korlap';
+    else if (u === 'bendahara' && p === 'bendahara') newRole = 'Bendahara';
+    
+    if (newRole) {
+        setRole(newRole);
+        setIsLoggedIn(true);
+        setView('dashboard');
+        // Simpan sesi login ke Local Storage agar tidak hilang saat refresh
+        localStorage.setItem('bansusAuth', JSON.stringify({ isLoggedIn: true, role: newRole }));
+    } else {
+        setLoginError('Username atau password salah!');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setView('dashboard');
+    setUsernameInput('');
+    setPasswordInput('');
+    // Hapus sesi dari Local Storage
+    localStorage.removeItem('bansusAuth');
   };
 
   const handleSimpanKas = (e: React.FormEvent) => {
@@ -283,6 +323,13 @@ export default function HomePage() {
     showModalNotice('Berhasil', 'Ploting berhasil dilakukan.');
   };
 
+  // Cegah error Hydration (render kosong sampai check localStorage selesai)
+  if (!isMounted) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+             <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+           </div>;
+  }
+
   // --- RENDER LOGIN ---
   if (!isLoggedIn) {
     return (
@@ -317,7 +364,9 @@ export default function HomePage() {
         <h1 className="text-lg font-bold tracking-wider uppercase"><i className="fa-solid fa-shield-halved mr-2"></i> BANSUS 1455</h1>
         <div className="flex gap-2 items-center">
             <span className="text-xs bg-white text-red-600 px-2 py-1 rounded-full font-bold shadow-sm">{role}</span>
-            <button onClick={() => {setIsLoggedIn(false); setView('dashboard');}} className="h-7 w-7 rounded-full bg-red-700 hover:bg-red-800 flex items-center justify-center text-xs"><i className="fa-solid fa-right-from-bracket"></i></button>
+            <button onClick={handleLogout} className="h-7 w-7 rounded-full bg-red-700 hover:bg-red-800 flex items-center justify-center text-xs" title="Logout">
+              <i className="fa-solid fa-right-from-bracket"></i>
+            </button>
         </div>
       </header>
 
