@@ -79,12 +79,14 @@ export default function App() {
             fetch('/api/gsheets?sheet=Laporan').then(r => r.json()),
             fetch('/api/gsheets?sheet=Arsip').then(r => r.json())
           ]);
+          
+          // MAPPING DATA: Menyelaraskan nama kolom di Sheets dengan state aplikasi
           setDb({
-            anggota: resAnggota.data || [],
-            kas: resKas.data || [],
-            kegiatan: resKeg.data || [],
-            laporan: resLap.data || [],
-            arsip: resArsip.data || []
+            anggota: (resAnggota.data || []).map((x: any) => ({ ...x, nama: x.Nama_Lengkap || x.nama || '', nik: x.NIK_NRA || x.nik || '-', hp: x.No_HP || x.hp || '-', role: x.Role || x.role || 'Anggota', status: x.Status_Aktif || x.status || 'Aktif' })),
+            kas: (resKas.data || []).map((x: any) => ({ ...x, tgl: x.Tanggal || x.tgl || '', jenis: x.Jenis || x.jenis || 'Pemasukan', ket: x.Keterangan || x.ket || '', nominal: Number(x.Nominal || x.nominal || 0) })),
+            kegiatan: (resKeg.data || []).map((x: any) => ({ ...x, id: x.ID || x.id || Date.now(), nama: x.Nama_Kegiatan || x.nama || '', tgl: x.Tanggal || x.tgl || '', waktu: x.Waktu || x.waktu || '', lokasi: x.Lokasi || x.lokasi || '', status: x.Status || x.status || 'Mendatang' })),
+            laporan: (resLap.data || []).map((x: any) => ({ ...x, tgl: x.Tanggal || x.tgl || '', nama: x.Nama || x.nama || '', lokasi: x.Lokasi || x.lokasi || '', qori: x.Qori || x.qori || '', pendamping: x.Pendamping || x.pendamping || '', r4: Number(x.R4 || x.r4 || 0), r2: Number(x.R2 || x.r2 || 0), dana: x.Dana || x.dana || '', catatan: x.Catatan || x.catatan || '' })),
+            arsip: (resArsip.data || []).map((x: any) => ({ ...x, jenis: x.Jenis || x.jenis || '', noSurat: x.No_Surat || x.noSurat || '', tgl: x.Tanggal || x.tgl || '', asalTujuan: x.Asal_Tujuan || x.asalTujuan || '', perihal: x.Perihal || x.perihal || '', link: x.Link_Berkas || x.link || '' }))
           });
         } catch (error) {
           console.error("Gagal load data", error);
