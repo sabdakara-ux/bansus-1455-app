@@ -254,7 +254,7 @@ export default function HomePage() {
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };</comment-tag>
+      };
 
       html2pdf().set(opt).from(element).save();
       showModalNotice('Berhasil', `Surat Tugas (.pdf) berhasil dibuat dan sedang diunduh.`);
@@ -833,3 +833,4 @@ export default function HomePage() {
     </div>
   );
 }
+
