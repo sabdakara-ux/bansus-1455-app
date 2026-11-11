@@ -39,7 +39,7 @@ export default function App() {
   const [showArsipModal, setShowArsipModal] = useState(false);
   const [arsipForm, setArsipForm] = useState({ jenis: 'Masuk', noSurat: '', tgl: '', asalTujuan: '', perihal: '', link: '' });
 
-  const [lapForm, setLapForm] = useState({ tgl: '', nama: '', lokasi: '', qori: '', pendamping: '', r4: '0', r2: '0', dana: '', catatan: '' });
+  const [lapForm, setLapForm] = useState({ tgl: '', nama: '', lokasi: '', qori: '', pendamping: '', personel: '', r4: '0', r2: '0', dana: '', catatan: '' });
   const [stForm, setStForm] = useState({ noSurat: '', tugas: '', tgl: '', lokasi: '' });
   const [stAnggotaTerpilih, setStAnggotaTerpilih] = useState<string[]>([]);
   
@@ -85,7 +85,7 @@ export default function App() {
             anggota: (resAnggota.data || []).map((x: any) => ({ ...x, nama: x.Nama_Lengkap || x.nama || '', nik: x.NIK_NRA || x.nik || '-', hp: x.No_HP || x.hp || '-', role: x.Role || x.role || 'Anggota', status: x.Status_Aktif || x.status || 'Aktif' })),
             kas: (resKas.data || []).map((x: any) => ({ ...x, tgl: x.Tanggal || x.tgl || '', jenis: x.Jenis || x.jenis || 'Pemasukan', ket: x.Keterangan || x.ket || '', nominal: Number(x.Nominal || x.nominal || 0) })),
             kegiatan: (resKeg.data || []).map((x: any) => ({ ...x, id: x.ID || x.id || Date.now(), nama: x.Nama_Kegiatan || x.nama || '', tgl: x.Tanggal || x.tgl || '', waktu: x.Waktu || x.waktu || '', lokasi: x.Lokasi || x.lokasi || '', status: x.Status || x.status || 'Mendatang' })),
-            laporan: (resLap.data || []).map((x: any) => ({ ...x, tgl: x.Tanggal || x.tgl || '', nama: x.Nama || x.nama || '', lokasi: x.Lokasi || x.lokasi || '', qori: x.Qori || x.qori || '', pendamping: x.Pendamping || x.pendamping || '', r4: Number(x.R4 || x.r4 || 0), r2: Number(x.R2 || x.r2 || 0), dana: x.Dana || x.dana || '', catatan: x.Catatan || x.catatan || '' })),
+            laporan: (resLap.data || []).map((x: any) => ({ ...x, tgl: x.Tanggal || x.tgl || '', nama: x.Nama || x.nama || '', lokasi: x.Lokasi || x.lokasi || '', qori: x.Qori || x.qori || '', pendamping: x.Pendamping || x.pendamping || '', personel: Number(x.Personel || x.personel || 0), r4: Number(x.R4 || x.r4 || 0), r2: Number(x.R2 || x.r2 || 0), dana: x.Dana || x.dana || '', catatan: x.Catatan || x.catatan || '' })),
             arsip: (resArsip.data || []).map((x: any) => ({ ...x, jenis: x.Jenis || x.jenis || '', noSurat: x.No_Surat || x.noSurat || '', tgl: x.Tanggal || x.tgl || '', asalTujuan: x.Asal_Tujuan || x.asalTujuan || '', perihal: x.Perihal || x.perihal || '', link: x.Link_Berkas || x.link || '' }))
           });
         } catch (error) {
@@ -176,10 +176,10 @@ export default function App() {
 
   const handleSimpanLaporan = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newData = { id: Date.now(), tgl: lapForm.tgl || new Date().toISOString().split('T')[0], nama: lapForm.nama, lokasi: lapForm.lokasi, qori: lapForm.qori, pendamping: lapForm.pendamping, r4: Number(lapForm.r4), r2: Number(lapForm.r2), dana: lapForm.dana, catatan: lapForm.catatan };
+    const newData = { id: Date.now(), tgl: lapForm.tgl || new Date().toISOString().split('T')[0], nama: lapForm.nama, lokasi: lapForm.lokasi, qori: lapForm.qori, pendamping: lapForm.pendamping, personel: Number(lapForm.personel), r4: Number(lapForm.r4), r2: Number(lapForm.r2), dana: lapForm.dana, catatan: lapForm.catatan };
     setDb(prev => ({ ...prev, laporan: [...prev.laporan, newData] }));
-    setLapForm({ tgl: '', nama: '', lokasi: '', qori: '', pendamping: '', r4: '0', r2: '0', dana: '', catatan: '' });
-    const success = await saveToGSheets('Laporan', [newData.id, newData.tgl, newData.nama, newData.lokasi, newData.qori, newData.pendamping, newData.r4, newData.r2, newData.dana, newData.catatan]);
+    setLapForm({ tgl: '', nama: '', lokasi: '', qori: '', pendamping: '', personel: '', r4: '0', r2: '0', dana: '', catatan: '' });
+    const success = await saveToGSheets('Laporan', [newData.id, newData.tgl, newData.nama, newData.lokasi, newData.qori, newData.pendamping, newData.personel, newData.r4, newData.r2, newData.dana, newData.catatan]);
     if(success) showModalNotice('Disimpan', 'Laporan masuk ke Google Sheets.');
   };
 
@@ -464,10 +464,24 @@ export default function App() {
              </div>
              {adminTab === 'lapor' && (
                 <form onSubmit={handleSimpanLaporan} className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3 mb-6">
-                    <div><label className="block text-xs font-bold text-gray-700 mb-1">Nama Kegiatan</label><input type="text" required value={lapForm.nama} onChange={e=>setLapForm({...lapForm, nama: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
-                    <div><label className="block text-xs font-bold text-gray-700 mb-1">Lokasi</label><input type="text" required value={lapForm.lokasi} onChange={e=>setLapForm({...lapForm, lokasi: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
-                    <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-bold shadow-md">Simpan Laporan</button>
-                    <button type="button" onClick={downloadExcelLaporan} className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-bold shadow-md">Unduh Rekap (.xlsx)</button>
+                    <div><label className="block text-xs font-bold text-gray-700 mb-1">1. Nama Kegiatan</label><input type="text" required value={lapForm.nama} onChange={e=>setLapForm({...lapForm, nama: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    <div><label className="block text-xs font-bold text-gray-700 mb-1">2. Lokasi Kegiatan</label><input type="text" required value={lapForm.lokasi} onChange={e=>setLapForm({...lapForm, lokasi: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    <div className="flex gap-2">
+                        <div className="flex-1"><label className="block text-xs font-bold text-gray-700 mb-1">3a. Nama Qari'</label><input type="text" value={lapForm.qori} onChange={e=>setLapForm({...lapForm, qori: e.target.value})} placeholder="Ust..." className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                        <div className="flex-1"><label className="block text-xs font-bold text-gray-700 mb-1">3b. Pendamping</label><input type="text" value={lapForm.pendamping} onChange={e=>setLapForm({...lapForm, pendamping: e.target.value})} placeholder="Bpk..." className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    </div>
+                    <div><label className="block text-xs font-bold text-gray-700 mb-1">4. Jumlah Personel (Orang)</label><input type="number" min="0" value={lapForm.personel} onChange={e=>setLapForm({...lapForm, personel: e.target.value})} placeholder="0" className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    <div className="flex gap-2">
+                        <div className="flex-1"><label className="block text-xs font-bold text-gray-700 mb-1">5a. Jml R4 (Mobil)</label><input type="number" min="0" value={lapForm.r4} onChange={e=>setLapForm({...lapForm, r4: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                        <div className="flex-1"><label className="block text-xs font-bold text-gray-700 mb-1">5b. Jml R2 (Motor)</label><input type="number" min="0" value={lapForm.r2} onChange={e=>setLapForm({...lapForm, r2: e.target.value})} className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    </div>
+                    <div><label className="block text-xs font-bold text-gray-700 mb-1">6. Sumber Dana</label><input type="text" value={lapForm.dana} onChange={e=>setLapForm({...lapForm, dana: e.target.value})} placeholder="Cth: Kas Internal / Sponsor" className="w-full p-2 border border-gray-300 rounded text-sm"/></div>
+                    <div><label className="block text-xs font-bold text-gray-700 mb-1">7. Catatan Kejadian / Evaluasi</label><textarea value={lapForm.catatan} onChange={e=>setLapForm({...lapForm, catatan: e.target.value})} rows={2} className="w-full p-2 border border-gray-300 rounded text-sm" placeholder="Tulis catatan jika ada..."></textarea></div>
+                    
+                    <div className="pt-2 border-t border-gray-100 mt-2 space-y-2">
+                        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700">Simpan Laporan</button>
+                        <button type="button" onClick={downloadExcelLaporan} className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-bold shadow-md hover:bg-green-700">Unduh Rekap (.xlsx)</button>
+                    </div>
                 </form>
              )}
              {adminTab === 'st' && (
