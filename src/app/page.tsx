@@ -398,6 +398,40 @@ export default function App() {
                  <p className="text-sm opacity-80 mb-1">Total Saldo Saat Ini</p>
                  <h3 className="text-3xl font-bold mb-4 tracking-tight">{formatRupiah(db.kas.filter(k=>k.jenis==='Pemasukan').reduce((a,b)=>a+Number(b.nominal),0) - db.kas.filter(k=>k.jenis==='Pengeluaran').reduce((a,b)=>a+Number(b.nominal),0))}</h3>
              </div>
+
+             <div className="flex justify-between items-center mb-4 mt-6">
+                <h2 className="text-xl font-bold text-gray-800">Rekap Lapor Giat</h2>
+                {['Admin', 'Korlap'].includes(role) && (
+                   <button onClick={() => { setView('administrasi'); setAdminTab('lapor'); }} className="text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg shadow-sm">
+                      Buat Laporan
+                   </button>
+                )}
+             </div>
+             <div className="space-y-3">
+               {db.laporan.length === 0 && <p className="text-sm text-gray-500 text-center py-4">Belum ada laporan kegiatan.</p>}
+               {[...db.laporan].reverse().map((lap, i) => (
+                 <div key={i} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                    <div className="flex justify-between items-start mb-2 pl-2">
+                       <div>
+                          <h3 className="font-bold text-gray-800 text-sm">{lap.nama}</h3>
+                          <p className="text-xs text-gray-500 mt-0.5"><i className="fa-regular fa-calendar mr-1"></i> {lap.tgl} • <i className="fa-solid fa-location-dot mr-1"></i> {lap.lokasi}</p>
+                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-3 text-xs bg-gray-50 p-2.5 rounded-lg border border-gray-200">
+                       <div><span className="text-gray-500 font-semibold">Qori':</span> {lap.qori || '-'}</div>
+                       <div><span className="text-gray-500 font-semibold">Pendamping:</span> {lap.pendamping || '-'}</div>
+                       <div><span className="text-gray-500 font-semibold">Personel:</span> <span className="font-bold text-blue-600">{lap.personel} Org</span></div>
+                       <div><span className="text-gray-500 font-semibold">R4 / R2:</span> {lap.r4} Mobil / {lap.r2} Motor</div>
+                    </div>
+                    {lap.catatan && (
+                        <div className="mt-2 text-[11px] text-gray-600 border-t border-gray-100 pt-2 italic">
+                            <span className="font-semibold text-gray-700 not-italic mr-1">Catatan:</span> {lap.catatan}
+                        </div>
+                    )}
+                 </div>
+               ))}
+             </div>
            </div>
         )}
         {view === 'kas' && (
