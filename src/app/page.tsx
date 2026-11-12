@@ -311,9 +311,7 @@ export default function App() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg">
-              <i className="fa-solid fa-shield-halved"></i>
-            </div>
+            <img src="/logo.png" alt="Logo BANSUS" className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-md" onError={(e) => { e.currentTarget.style.display='none'; }} />
             <h1 className="text-2xl font-extrabold text-gray-800">BANSUS 1455</h1>
             <p className="text-sm text-gray-500 mt-1">Sistem Informasi Manajemen</p>
           </div>
@@ -450,7 +448,10 @@ export default function App() {
   return (
     <div className="max-w-[480px] mx-auto bg-gray-50 min-h-screen relative shadow-lg pb-24">
       <header className="bg-red-600 text-white p-4 sticky top-0 z-40 flex justify-between items-center shadow-md">
-        <h1 className="text-lg font-bold tracking-wider uppercase"><i className="fa-solid fa-shield-halved mr-2"></i> BANSUS 1455</h1>
+        <h1 className="text-lg font-bold tracking-wider uppercase flex items-center">
+          <img src="/logo.png" alt="Logo" className="w-7 h-7 mr-2 object-contain bg-white rounded-full p-0.5" onError={(e) => { e.currentTarget.style.display='none'; }} />
+          BANSUS 1455
+        </h1>
         <div className="flex gap-2 items-center">
             {isLoadingData && <i className="fa-solid fa-circle-notch fa-spin text-white text-sm mr-1"></i>}
             <span className="text-xs bg-white text-red-600 px-2 py-1 rounded-full font-bold shadow-sm">{role}</span>
