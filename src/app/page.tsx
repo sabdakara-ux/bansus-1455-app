@@ -312,8 +312,8 @@ export default function App() {
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
           <div className="text-center mb-8">
             <img src="/logo.png" alt="Logo BANSUS" className="w-24 h-24 mx-auto mb-4 object-contain drop-shadow-md" onError={(e) => { e.currentTarget.style.display='none'; }} />
-            <h1 className="text-2xl font-extrabold text-gray-800">BANSUS 1455</h1>
-            <p className="text-sm text-gray-500 mt-1">Sistem Informasi Manajemen</p>
+            <h1 className="text-2xl font-extrabold text-gray-800">BANSUS 1455 KOMWIL SAMPANG</h1>
+            <p className="text-sm text-gray-500 mt-1">Khidmah lil Ma'had, Khidmah Lil Ummah</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
@@ -450,7 +450,7 @@ export default function App() {
       <header className="bg-red-600 text-white p-4 sticky top-0 z-40 flex justify-between items-center shadow-md">
         <h1 className="text-lg font-bold tracking-wider uppercase flex items-center">
           <img src="/logo.png" alt="Logo" className="w-7 h-7 mr-2 object-contain bg-white rounded-full p-0.5" onError={(e) => { e.currentTarget.style.display='none'; }} />
-          BANSUS 1455
+          BANSUS 1455 KOMWIL SAMPANG
         </h1>
         <div className="flex gap-2 items-center">
             {isLoadingData && <i className="fa-solid fa-circle-notch fa-spin text-white text-sm mr-1"></i>}
@@ -470,7 +470,7 @@ export default function App() {
              </div>
 
              <div className="flex justify-between items-center mb-4 mt-6">
-                <h2 className="text-xl font-bold text-gray-800">Rekap Lapor Giat</h2>
+                <h2 className="text-xl font-bold text-gray-800">Rekap Laporan Kegiatan</h2>
                 {['Admin', 'Korlap'].includes(role) && (
                    <button onClick={() => { setView('administrasi'); setAdminTab('lapor'); }} className="text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg shadow-sm">
                       Buat Laporan
@@ -562,7 +562,7 @@ export default function App() {
              <div className="flex bg-white rounded-lg p-1 shadow-sm border border-gray-200 mb-4">
                {['lapor', 'st', 'arsip'].map(tab => (
                  <button key={tab} onClick={() => setAdminTab(tab)} className={`flex-1 text-xs font-bold py-2 rounded-md transition-colors ${adminTab === tab ? 'bg-red-50 text-red-600' : 'text-gray-500 hover:bg-gray-50'}`}>
-                   {tab === 'lapor' ? 'Lapor Giat' : tab === 'st' ? 'Surat Tugas' : 'Arsip'}
+                   {tab === 'lapor' ? 'Laporan Kegiatan' : tab === 'st' ? 'Surat Tugas' : 'Arsip'}
                  </button>
                ))}
              </div>
